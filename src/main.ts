@@ -1,14 +1,13 @@
 function send(text, isDebug = false) {
-    const access_token = PropertiesService.getScriptProperties().getProperty('ACCESS_TOKEN');
     const url = isDebug ? "https://api.line.me/v2/bot/message/push" : "https://api.line.me/v2/bot/message/broadcast";
+
     const headers = {
         "Content-Type": "application/json; charset=UTF-8",
-        'Authorization': 'Bearer ' + access_token,
+        'Authorization': 'Bearer ' + PropertiesService.getScriptProperties().getProperty('ACCESS_TOKEN'),
     };
 
-    const to = PropertiesService.getScriptProperties().getProperty('TO');
     const postData = {
-        "to": to,
+        "to": PropertiesService.getScriptProperties().getProperty('TO'),
         "messages": [{'type': 'text', 'text': text}]
     };
 
@@ -33,7 +32,7 @@ function debug() {
 }
 
 export function getMsg(today: Date): String {
-    const firstDay = new Date(Date.parse("2014/05/25"));
+    const firstDay = new Date("2014/05/25");
     const diffY = dateDiff(firstDay, today, 'Y');
     const diffM = dateDiff(firstDay, today, 'YM');
     const diffD = dateDiff(firstDay, today, 'MD');
@@ -57,7 +56,7 @@ export function getMsg(today: Date): String {
  *      false: 初日不算入
  *
  */
-function dateDiff(dt1, dt2, u, f = false) : number{
+function dateDiff(dt1, dt2, u, f = false): number {
     if (f) dt1 = dateAdd(dt1, -1, 'D');
     const y1 = dt1.getFullYear();
     const m1 = dt1.getMonth();
