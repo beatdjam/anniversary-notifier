@@ -32,74 +32,29 @@ function debug() {
 }
 
 export function getMsg(today: Date): String {
+    // 記念日
     const firstDay = new Date("2014/05/25");
-    const diffY = dateDiff(firstDay, today, 'Y');
-    const diffM = dateDiff(firstDay, today, 'YM');
-    const diffD = dateDiff(firstDay, today, 'MD');
-    if (diffM == 0 && diffD == 0) return `今日は${diffY}年記念日です！`;
-    if (diffD == 0) return `今日は${diffY}年${diffM}ヶ月記念日です！`;
-    return null;
+    const diffDateString = getDiffYM(firstDay, today)
+    if (diffDateString == null) return null;
+    return `今日は${diffDateString}記念日です！`;
 }
 
-/*
- *  経過年・月・日数の計算
- *
- *  dt1: 開始年月日の Date オブジェクト
- *  dt2: 終了年月日の Date オブジェクト
- *    u:  'Y': 経過年数を求める
- *        'M': 経過月数を求める
- *        'D': 経過日数を求める
- *       'YM': 1年に満たない月数
- *       'MD': 1ヶ月に満たない日数
- *       'YD': 1年に満たない日数
- *    f: true: 初日算入
- *      false: 初日不算入
- *
- */
-function dateDiff(dt1, dt2, u, f = false): number {
-    if (f) dt1 = dateAdd(dt1, -1, 'D');
-    const y1 = dt1.getFullYear();
-    const m1 = dt1.getMonth();
-    const y2 = dt2.getFullYear();
-    const m2 = dt2.getMonth();
-    let dt3, r = 0;
-    if (typeof u == 'undefined' || u == 'D') {
-        r = (dt2 - dt1) / (24 * 3600 * 1000);
-    } else if (u == 'M') {
-        r = (y2 * 12 + m2) - (y1 * 12 + m1);
-        dt3 = dateAdd(dt1, r, 'M');
-        if (dateDiff(dt3, dt2, 'D') < 0) --r;
-    } else if (u == 'Y') {
-        r = dateDiff(dt1, dt2, 'M') / 12;
-    } else if (u == 'YM') {
-        r = dateDiff(dt1, dt2, 'M') % 12;
-    } else if (u == 'MD') {
-        r = dateDiff(dt1, dt2, 'M');
-        dt3 = dateAdd(dt1, r, 'M');
-        r = dateDiff(dt3, dt2, 'D');
-    } else if (u == 'YD') {
-        r = dateDiff(dt1, dt2, 'Y');
-        dt3 = dateAdd(dt1, r * 12, 'M');
-        r = dateDiff(dt3, dt2, 'D');
-    }
-    return Math.floor(r);
-}
+function getDiffYM(from: Date, to: Date): string | null {
+    // 記念日と同日以外NG
+    if (to.getDate() != from.getDate()) return null;
 
-function dateAdd(dt, dd, u) {
-    let y = dt.getFullYear();
-    let m = dt.getMonth();
-    const d = dt.getDate();
-    const r = new Date(y, m, d);
-    if (typeof u == 'undefined' || u == 'D') {
-        r.setDate(d + dd);
-    } else if (u == 'M') {
-        m += dd;
-        y += m / 12;
-        m %= 12;
-        const e = (new Date(y, m + 1, 0)).getDate();
-        r.setFullYear(y, m, (d > e ? e : d));
-    }
-    return r;
+    // N年記念日
+    if (to.getMonth() == from.getMonth()) return `${to.getFullYear() - from.getFullYear()}年`;
+
+    // N年Nヶ月記念日
+    const diffY = to.getFullYear() - from.getFullYear();
+    const diffM = to.getMonth() - from.getMonth();
+
+    // 同年または翌年の対象月より前(1年未満)
+    if (diffY == 0 || diffY == 1 && diffM < 0) return `${12 + diffM}ヶ月`;
+
+    // 翌年以降の対象月以外
+    return `${diffY}年${diffM}ヶ月`;
 }
 
 /**
