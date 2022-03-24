@@ -50,11 +50,9 @@ function getDiffYM(from: Date, to: Date): string | null {
     const diffY = to.getFullYear() - from.getFullYear();
     const diffM = to.getMonth() - from.getMonth();
 
-    // 同年または翌年の対象月より前(1年未満)
-    if (diffY == 0 || diffY == 1 && diffM < 0) return `${12 + diffM}ヶ月`;
-
-    // 翌年以降の対象月以外
-    return `${diffY}年${diffM}ヶ月`;
+    const month = diffM < 0 ? `${12 + diffM}ヶ月` : `${diffM}ヶ月`
+    if (diffY == 0 || (diffY == 1 && diffM < 0)) return `${month}`
+    else return `${diffY}年${month}`;
 }
 
 /**

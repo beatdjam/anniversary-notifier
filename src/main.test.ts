@@ -11,9 +11,14 @@ describe('getMsg', () => {
             .toEqual('今日は1年記念日です！');
     });
 
-    test('N年Mヶ月記念日 4月以前', () => {
+    test('Mヶ月記念日 4月以前', () => {
         expect(getMsg(new Date(2015, 0, 25)))
             .toEqual('今日は8ヶ月記念日です！');
+    });
+
+    test('N年Mヶ月記念日 4月以前', () => {
+        expect(getMsg(new Date(2022, 1, 25)))
+            .toEqual('今日は8年9ヶ月記念日です！');
     });
 
     test('N年Mヶ月記念日 6月以後', () => {
