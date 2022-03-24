@@ -52,6 +52,7 @@ function getDiffYM(from: Date, to: Date): string | null {
 
     const month = diffM < 0 ? `${12 + diffM}ヶ月` : `${diffM}ヶ月`
     if (diffY == 0 || (diffY == 1 && diffM < 0)) return `${month}`
+    else if (diffM < 0) return `${diffY - 1}年${month}`;
     else return `${diffY}年${month}`;
 }
 
