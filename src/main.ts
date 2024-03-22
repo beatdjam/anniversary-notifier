@@ -1,4 +1,4 @@
-function send(text, isDebug = false) {
+function send(text: string, isDebug: boolean = false) {
     const url = isDebug ? "https://api.line.me/v2/bot/message/push" : "https://api.line.me/v2/bot/message/broadcast";
 
     const headers = {
@@ -21,7 +21,6 @@ function send(text, isDebug = false) {
 }
 
 function createMessage() {
-    setTrigger();
     const msg = getMsg(new Date());
     if (msg != null) return send(msg);
 }
@@ -31,7 +30,7 @@ function debug() {
     if (msg != null) return send(msg, true);
 }
 
-export function getMsg(today: Date): String {
+function getMsg(today: Date): string | null {
     // 記念日
     const firstDay = new Date("2014/05/25");
     const diffDateString = getDiffYM(firstDay, today)
@@ -60,10 +59,18 @@ function getDiffYM(from: Date, to: Date): string | null {
  * 翌日の0時に再実行するトリガーを生成する
  */
 function setTrigger(): void {
-    ScriptApp.newTrigger('createMessage')
+    const functionName = 'createMessage';
+    deleteTriggerByFunctionName(functionName);
+    ScriptApp.newTrigger(functionName)
         .timeBased()
         .at(getNextDay(new Date()))
         .create();
+}
+
+function deleteTriggerByFunctionName(functionName: string): void {
+    ScriptApp.getProjectTriggers()
+        .filter(trigger => trigger.getHandlerFunction() === functionName)
+        .forEach(trigger => ScriptApp.deleteTrigger(trigger));
 }
 
 /**
@@ -71,7 +78,7 @@ function setTrigger(): void {
  * @param origin
  * @returns
  */
-export function getNextDay(origin: Date): Date {
+function getNextDay(origin: Date): Date {
     const setTime: Date = new Date(origin.getTime());
     setTime.setDate(setTime.getDate() + 1)
     setTime.setHours(0);
