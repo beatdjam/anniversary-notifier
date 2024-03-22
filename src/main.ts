@@ -1,87 +1,25 @@
-function send(text: string, isDebug: boolean = false) {
-    const url = isDebug ? "https://api.line.me/v2/bot/message/push" : "https://api.line.me/v2/bot/message/broadcast";
+import { MessageRepository } from './repository/messageRepository';
+import { TriggerUtil } from './util/triggerUtil';
+import { DateUtil } from './util/dateUtil';
 
-    const headers = {
-        "Content-Type": "application/json; charset=UTF-8",
-        'Authorization': 'Bearer ' + PropertiesService.getScriptProperties().getProperty('ACCESS_TOKEN'),
-    };
+const firstDay = new Date('2014/05/25');
 
-    const postData = {
-        "to": PropertiesService.getScriptProperties().getProperty('TO'),
-        "messages": [{'type': 'text', 'text': text}]
-    };
-
-    const options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
-        "method": "post",
-        "headers": headers,
-        "payload": JSON.stringify(postData)
-    };
-
-    return UrlFetchApp.fetch(url, options);
+function setTrigger() {
+    TriggerUtil.setTrigger('createMessage', DateUtil.getNextDay(new Date()));
 }
 
 function createMessage() {
-    const msg = getMsg(new Date());
-    if (msg != null) return send(msg);
+    const msg = getMessage(new Date());
+    if (msg != null) return new MessageRepository().broadcast(msg);
 }
 
 function debug() {
-    const msg = getMsg(new Date());
-    if (msg != null) return send(msg, true);
+    const msg = getMessage(new Date());
+    if (msg != null) return new MessageRepository().push(msg);
 }
 
-function getMsg(today: Date): string | null {
-    // 記念日
-    const firstDay = new Date("2014/05/25");
-    const diffDateString = getDiffYM(firstDay, today)
+export function getMessage(today: Date): string | null {
+    const diffDateString = DateUtil.getDiffYM(firstDay, today);
     if (diffDateString == null) return null;
     return `今日は${diffDateString}記念日です！`;
-}
-
-function getDiffYM(from: Date, to: Date): string | null {
-    // 記念日と同日以外NG
-    if (to.getDate() != from.getDate()) return null;
-
-    // N年記念日
-    if (to.getMonth() == from.getMonth()) return `${to.getFullYear() - from.getFullYear()}年`;
-
-    // N年Nヶ月記念日
-    const diffY = to.getFullYear() - from.getFullYear();
-    const diffM = to.getMonth() - from.getMonth();
-
-    const month = diffM < 0 ? `${12 + diffM}ヶ月` : `${diffM}ヶ月`
-    if (diffY == 0 || (diffY == 1 && diffM < 0)) return `${month}`
-    else if (diffM < 0) return `${diffY - 1}年${month}`;
-    else return `${diffY}年${month}`;
-}
-
-/**
- * 翌日の0時に再実行するトリガーを生成する
- */
-function setTrigger(): void {
-    const functionName = 'createMessage';
-    deleteTriggerByFunctionName(functionName);
-    ScriptApp.newTrigger(functionName)
-        .timeBased()
-        .at(getNextDay(new Date()))
-        .create();
-}
-
-function deleteTriggerByFunctionName(functionName: string): void {
-    ScriptApp.getProjectTriggers()
-        .filter(trigger => trigger.getHandlerFunction() === functionName)
-        .forEach(trigger => ScriptApp.deleteTrigger(trigger));
-}
-
-/**
- * 入力した日付の翌日のDateオブジェクトを返却します
- * @param origin
- * @returns
- */
-function getNextDay(origin: Date): Date {
-    const setTime: Date = new Date(origin.getTime());
-    setTime.setDate(setTime.getDate() + 1)
-    setTime.setHours(0);
-    setTime.setMinutes(0);
-    return setTime
 }

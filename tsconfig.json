@@ -4,6 +4,7 @@
             "es2019"
         ],
         "experimentalDecorators": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "strict": true,
     }
 }
